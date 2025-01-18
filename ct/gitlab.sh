@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/gitlab/misc/build.func)
 
 source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
