@@ -14,6 +14,8 @@ setting_up_container
 network_check
 update_os
 
+STD="sudo"
+
 # Installing Dependencies
 msg_info "Installing Dependencies"
 $STD apt-get install -y \
