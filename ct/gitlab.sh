@@ -1,56 +1,56 @@
 #!/usr/bin/env bash
 source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/gitlab/misc/build.func)
+# Copyright (c) 2021-2025 tteck
+# Author: tteck (tteckster) | Co-Author: Rogue-King
+# License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
+# Source: https://about.gitlab.com/
 
-source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
+# App Default Values
+APP="GitLab"
+var_tags="gitlab"
+var_cpu="4"
+var_ram="8192"
+var_disk="50"
+var_os="debian"
+var_version="12"
+var_unprivileged="1"
+
+# App Output & Base Settings
+header_info "$APP"
+base_settings
+
+# Core
+variables
 color
-verb_ip6
 catch_errors
-setting_up_container
-network_check
-update_os
 
 msg_info "Installing Dependencies"
 $STD apt-get install -y curl
+$STD apt-get install -y sudo
 $STD apt-get install -y openssh-server
 $STD apt-get install -y ca-certificates
 $STD apt-get install -y perl
 msg_ok "Installed Dependencies"
 
 msg_info "Installing GitLab"
-RELEASE=$(wget -q https://gitlab.com/gitlab-org/gitlab-foss/releases/latest -O - | grep "title>Release" | cut -d " " -f 4 | sed 's/^v//')
-wget -q https://gitlab.com/gitlab-org/gitlab-foss/releases/download/v$RELEASE/gitlab-$RELEASE-linux-amd64
-mv gitlab* /usr/local/bin/gitlab
-chmod +x /usr/local/bin/gitlab
-adduser --system --group --disabled-password --shell /bin/bash --home /etc/gitlab gitlab > /dev/null
-mkdir -p /var/lib/gitlab/{custom,data,log}
-chown -R gitlab:gitlab /var/lib/gitlab/
-chmod -R 750 /var/lib/gitlab/
-chown root:gitlab /etc/gitlab
-chmod 770 /etc/gitlab
-sudo -u gitlab ln -s /var/lib/gitlab/data/.ssh/ /etc/gitlab/.ssh
-msg_ok "Installed GitLab"
+wget -q https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+chmod +x script.deb.sh
+./script.deb.sh
+$STD apt-get install gitlab-ce
+msg_ok "GitLab Installed"
 
-msg_info "Creating Service"
-cat <<EOF >/etc/systemd/system/gitlab.service
-[Unit]
-Description=GitLab (Web-based Git repository manager)
-After=syslog.target
-After=network.target
+msg_info "Configuring GitLab"
+# Configure GitLab as per your environment, e.g. ports, etc.
+gitlab-ctl reconfigure
 
-[Service]
-RestartSec=2s
-Type=simple
-User=gitlab
-Group=gitlab
-WorkingDirectory=/var/lib/gitlab
-ExecStart=/usr/local/bin/gitlab web --config /etc/gitlab/app.ini
-Restart=always
-Environment=USER=gitlab HOME=/var/lib/gitlab/data GITLAB_WORK_DIR=/var/lib/gitlab
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl enable -q --now gitlab
-msg_ok "Created Service"
+msg_info "Starting GitLab"
+systemctl enable gitlab
+systemctl start gitlab
+
+msg_ok "GitLab is now running!"
+
+motd_ssh
+customize
 
 msg_info "Cleaning up"
 $STD apt-get -y autoremove
