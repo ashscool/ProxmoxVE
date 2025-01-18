@@ -26,6 +26,8 @@ variables
 color
 catch_errors
 
+msg_info "Variable = $STD"
+
 msg_info "Installing Dependencies"
 $STD apt-get install -y curl
 $STD apt-get install -y sudo
