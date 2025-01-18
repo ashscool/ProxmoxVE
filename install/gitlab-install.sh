@@ -5,6 +5,8 @@
 # License: MIT
 # Source: https://about.gitlab.com/install/#debian
 
+STD="sudo"
+
 # Import Functions und Setup
 source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
@@ -13,8 +15,6 @@ catch_errors
 setting_up_container
 network_check
 update_os
-
-STD="sudo"
 
 # Installing Dependencies
 msg_info "Installing Dependencies"
