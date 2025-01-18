@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-STD=sudo
 source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/gitlab/misc/build.func)
 # Copyright (c) 2021-2025 tteck
 # Author: tteck (tteckster) | Co-Author: Rogue-King
@@ -25,8 +24,6 @@ base_settings
 variables
 color
 catch_errors
-
-msg_info "Variable = $STD"
 
 msg_info "Installing Dependencies"
 $STD apt-get install -y curl
