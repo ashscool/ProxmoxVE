@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2021-2024 community-scripts ORG
-# Author: ashscool
+# Author: [YourUserName]
 # License: MIT
-# Source: https://about.gitlab.com/install/#debian
+# Source: [SOURCE_URL]
 
-# Import Functions und Setup
+# Import Functions and Setup
 source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
 verb_ip6
@@ -20,8 +20,10 @@ $STD apt-get install -y \
   curl \
   sudo \
   mc \
+  ca-certificates \
   lsb-release \
-  ca-certificates
+  wget \
+  unzip
 msg_ok "Installed Dependencies"
 
 # Setting up GitLab
@@ -29,24 +31,6 @@ msg_info "Setting up GitLab"
 curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash
 $STD apt-get install -y gitlab-ce
 msg_ok "Installed GitLab"
-
-# Creating GitLab Service (if needed)
-msg_info "Creating GitLab Service"
-cat <<EOF >/etc/systemd/system/gitlab.service
-[Unit]
-Description=GitLab Service
-After=network.target
-
-[Service]
-ExecStart=/opt/gitlab/bin/gitlab-ctl start
-ExecStop=/opt/gitlab/bin/gitlab-ctl stop
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl enable -q --now gitlab.service
-msg_ok "Created GitLab Service"
 
 # Setting up Database for GitLab (MySQL)
 msg_info "Setting up Database"
