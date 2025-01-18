@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/main/misc/build.func)
+source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/gitlab/misc/build.func)
 
 # App Default Values
 APP="GitLab"
