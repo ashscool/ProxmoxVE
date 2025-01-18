@@ -63,20 +63,4 @@ $STD mysql -u root -e "GRANT ALL ON $DB_NAME.* TO '$DB_USER'@'localhost'; FLUSH 
     echo "Database User: $DB_USER"
     echo "Database Password: $DB_PASS"
     echo "Database Name: $DB_NAME"
-} >> ~/gitlab-creds
-msg_ok "Set up Database"
-
-# Finalizing GitLab Installation
-msg_info "Finalizing GitLab Installation"
-gitlab-ctl reconfigure
-msg_ok "GitLab Installation Complete"
-
-# Cleanup
-msg_info "Cleaning up"
-$STD apt-get -y autoremove
-$STD apt-get -y autoclean
-rm -f /tmp/* /var/tmp/*
-msg_ok "Cleaned"
-
-motd_ssh
-customize
+} >> ~/gitlab-c
