@@ -2,7 +2,7 @@
     "name": "GitLab",
     "slug": "gitlab",
     "categories": [
-        19
+        0
     ],
     "date_created": "2025-01-18",
     "type": "ct",
@@ -11,16 +11,16 @@
     "interface_port": 80,
     "documentation": null,
     "website": "https://about.gitlab.com/",
-    "logo": "https://about.gitlab.com/images/press/logo/svg/gitlab-logo.svg",
-    "description": "GitLab is a web-based DevOps lifecycle tool that provides a Git repository manager providing a complete DevOps platform, including source code management (SCM), continuous integration, and more.",
+    "logo": "LINK TO LOGO",
+    "description": "GitLab is a web-based DevOps lifecycle tool that provides a Git repository manager providing wiki, issue tracking, and CI/CD pipeline features using an open-source license.",
     "install_methods": [
         {
             "type": "default",
             "script": "ct/gitlab.sh",
             "resources": {
-                "cpu": 4,
-                "ram": 8192,
-                "hdd": 16,
+                "cpu": 2,
+                "ram": 2048,
+                "hdd": 4,
                 "os": "debian",
                 "version": "12"
             }

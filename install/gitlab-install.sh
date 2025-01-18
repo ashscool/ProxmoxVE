@@ -1,53 +1,80 @@
 #!/usr/bin/env bash
-source <(curl -s https://raw.githubusercontent.com/ashscool/ProxmoxVE/gitlab/misc/build.func)
-# Copyright (c) 2021-2025 tteck
-# Author: tteck (tteckster) | Co-Author: Rogue-King
-# License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
-# Source: https://about.gitlab.com/
 
-# App Default Values
-APP="GitLab"
-var_tags="gitlab"
-var_cpu="4"
-var_ram="8192"
-var_disk="50"
-var_os="debian"
-var_version="12"
-var_unprivileged="1"
+# Copyright (c) 2021-2024 community-scripts ORG
+# Author: ashscool
+# License: MIT
+# Source: https://about.gitlab.com/install/#debian
 
-# App Output & Base Settings
-header_info "$APP"
-base_settings
-
-# Core
-variables
+# Import Functions und Setup
+source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
+verb_ip6
 catch_errors
+setting_up_container
+network_check
+update_os
 
-# Start Installation
-function install_gitlab() {
-   header_info
-   check_container_storage
-   check_container_resources
-   if [[ ! -f /usr/local/bin/gitlab ]]; then
-      msg_error "No ${APP} Installation Found!"
-      exit
-   fi
-   msg_info "Installing GitLab"
-   wget -q https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
-   chmod +x script.deb.sh
-   ./script.deb.sh
-   apt-get install gitlab-ce
-   msg_ok "GitLab Installed"
-   systemctl enable gitlab
-   systemctl start gitlab
-}
+# Installing Dependencies
+msg_info "Installing Dependencies"
+$STD apt-get install -y \
+  curl \
+  sudo \
+  mc \
+  lsb-release \
+  ca-certificates
+msg_ok "Installed Dependencies"
 
-start
-build_container
-description
+# Setting up GitLab
+msg_info "Setting up GitLab"
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash
+$STD apt-get install -y gitlab-ce
+msg_ok "Installed GitLab"
 
-msg_ok "Completed Successfully!\n"
-echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
-echo -e "${INFO}${YW} Access it using the following URL:${CL}"
-echo -e "${TAB}${GATEWAY}${BGN}http://${IP}:80${CL}"
+# Creating GitLab Service (if needed)
+msg_info "Creating GitLab Service"
+cat <<EOF >/etc/systemd/system/gitlab.service
+[Unit]
+Description=GitLab Service
+After=network.target
+
+[Service]
+ExecStart=/opt/gitlab/bin/gitlab-ctl start
+ExecStop=/opt/gitlab/bin/gitlab-ctl stop
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable -q --now gitlab.service
+msg_ok "Created GitLab Service"
+
+# Setting up Database for GitLab (MySQL)
+msg_info "Setting up Database"
+DB_NAME="gitlab_db"
+DB_USER="gitlab_user"
+DB_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c13)
+$STD mysql -u root -e "CREATE DATABASE $DB_NAME;"
+$STD mysql -u root -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED WITH mysql_native_password AS PASSWORD('$DB_PASS');"
+$STD mysql -u root -e "GRANT ALL ON $DB_NAME.* TO '$DB_USER'@'localhost'; FLUSH PRIVILEGES;"
+{
+    echo "GitLab Credentials"
+    echo "Database User: $DB_USER"
+    echo "Database Password: $DB_PASS"
+    echo "Database Name: $DB_NAME"
+} >> ~/gitlab-creds
+msg_ok "Set up Database"
+
+# Finalizing GitLab Installation
+msg_info "Finalizing GitLab Installation"
+gitlab-ctl reconfigure
+msg_ok "GitLab Installation Complete"
+
+# Cleanup
+msg_info "Cleaning up"
+$STD apt-get -y autoremove
+$STD apt-get -y autoclean
+rm -f /tmp/* /var/tmp/*
+msg_ok "Cleaned"
+
+motd_ssh
+customize
